@@ -1,6 +1,7 @@
 const {
   fs,
   path,
+  HOME,
   theme,
 } = require("../shared");
 
@@ -44,7 +45,7 @@ $crust: ${theme.crust};
 
 fs.writeFileSync(
   path.join(
-    process.env.HOME,
+    HOME,
     ".config/ags/styles/colors.scss"
   ),
   content

@@ -1,9 +1,14 @@
 const fs = require("fs");
 const path = require("path");
 
+const HOME =
+  process.env.SUDO_USER
+    ? `/home/${process.env.SUDO_USER}`
+    : process.env.HOME;
+
 const ROOT =
   path.join(
-    process.env.HOME,
+    HOME,
     ".config/shiro-theme"
   );
 
@@ -27,24 +32,33 @@ const theme =
 
 const wallpaperVideo =
   path.join(
-    process.env.HOME,
-    "Imágenes",
-    "Wallpapers",
+    ROOT,
+    "assets",
+    "wallpapers",
     `${CURRENT_THEME}.mp4`
   );
 
 const wallpaperImage =
   path.join(
-    process.env.HOME,
-    "Imágenes",
-    "Wallpapers",
+    ROOT,
+    "assets",
+    "wallpapers",
     `${CURRENT_THEME}.png`
   );
 
+function stripHash(color) {
+  if (!color) return "000000";
+  return color.replace("#", "");
+}
+
 module.exports = {
+  fs,
+  path,
+  HOME,
   ROOT,
   CURRENT_THEME,
   theme,
+  stripHash,
   wallpaperVideo,
   wallpaperImage,
 };

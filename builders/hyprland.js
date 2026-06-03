@@ -1,11 +1,28 @@
 const {
   fs,
   path,
+  HOME,
   theme,
   stripHash,
   wallpaperVideo,
   wallpaperImage,
 } = require("../shared");
+
+const targetDir = path.join(HOME, ".config/hypr/wallpapers");
+if (!fs.existsSync(targetDir)) {
+  fs.mkdirSync(targetDir, { recursive: true });
+}
+
+const targetImage = path.join(targetDir, path.basename(wallpaperImage));
+const targetVideo = path.join(targetDir, path.basename(wallpaperVideo));
+
+if (fs.existsSync(wallpaperImage)) {
+  fs.copyFileSync(wallpaperImage, targetImage);
+}
+
+if (fs.existsSync(wallpaperVideo)) {
+  fs.copyFileSync(wallpaperVideo, targetVideo);
+}
 
 const content = `# AUTO GENERATED
 
@@ -45,13 +62,13 @@ $mantle = rgb(${stripHash(theme.mantle)})
 $crust = rgb(${stripHash(theme.crust)})
 
 # Wallpapers
-$backgroundmp4 = ${wallpaperVideo}
-$background = ${wallpaperImage}
+$backgroundmp4 = ${targetVideo}
+$background = ${targetImage}
 `;
 
 fs.writeFileSync(
   path.join(
-    process.env.HOME,
+    HOME,
     ".config/hypr/conf/colors.conf"
   ),
   content

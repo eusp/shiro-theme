@@ -49,17 +49,22 @@ fs.writeFileSync(
   qml
 );
 
+const targetDir = "/usr/share/sddm/themes/silent/backgrounds";
+if (!fs.existsSync(targetDir)) {
+  fs.mkdirSync(targetDir, { recursive: true });
+}
+
 if (fs.existsSync(wallpaperVideo)) {
   fs.copyFileSync(
     wallpaperVideo,
-    "/usr/share/sddm/themes/silent/backgrounds/background.mp4"
+    `${targetDir}/background.mp4`
   );
 }
 
 if (fs.existsSync(wallpaperImage)) {
   fs.copyFileSync(
     wallpaperImage,
-    "/usr/share/sddm/themes/silent/backgrounds/background.png"
+    `${targetDir}/background.png`
   );
 }
 

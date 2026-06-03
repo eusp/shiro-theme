@@ -8,7 +8,7 @@ GRUB_DIR="$HOME/.config/grub-theme"
 SDDM_DIR="/usr/share/sddm/themes/silent"
 
 THEME_DIR="$HOME/.config/shiro-theme"
-BUILD_SCRIPT="$THEME_DIR/build.ts"
+BUILD_SCRIPT="$THEME_DIR/build.js"
 
 clear
 

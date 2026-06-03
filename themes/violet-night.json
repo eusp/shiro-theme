@@ -1,0 +1,31 @@
+{
+  "name": "Violet Night",
+
+  "base": "#08060d",
+  "text": "#f0eef5",
+  "subtext0": "#b8aed6",
+
+  "surface0": "#16111f",
+  "surface1": "#221a2f",
+  "surface2": "#34284a",
+
+  "overlay0": "#2b213d",
+  "overlay1": "#45335f",
+
+  "primary": "#8b4cc6",
+  "primaryAlt": "#a87cff",
+  "primaryMuted": "#6d4598",
+
+  "danger": "#c94d9f",
+  "warning": "#d9b96a",
+  "success": "#6ea87c",
+  "info": "#7fbcff",
+
+  "accent0": "#c6b3ff",
+  "accent1": "#d56ee8",
+  "accent2": "#e38cff",
+  "accent3": "#f4d9ff",
+
+  "mantle": "#0d0a14",
+  "crust": "#050309"
+}

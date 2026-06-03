@@ -39,7 +39,11 @@ echo "Actualizando: $DIR"
 echo "-------------------------------------"
 
 if [ -d "$DIR/.git" ]; then
-    git -C "$DIR" pull
+    if [ -n "$SUDO_USER" ]; then
+        sudo -u "$SUDO_USER" git -C "$DIR" pull
+    else
+        git -C "$DIR" pull
+    fi
 else
     echo "No es un repositorio git"
 fi

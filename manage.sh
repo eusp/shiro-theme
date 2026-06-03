@@ -7,7 +7,7 @@ HYPR_DIR="$HOME/.config/hypr"
 SDDM_DIR="/usr/share/sddm/themes/silent"
 
 THEME_DIR="$HOME/.config/shiro-theme"
-BUILD_SCRIPT="$THEME_DIR/build.js"
+BUILD_SCRIPT="$THEME_DIR/build.ts"
 
 clear
 
@@ -26,7 +26,6 @@ read -rp "Opción: " OPTION
 update_repo() {
 local DIR="$1"
 
-```
 echo
 echo "-------------------------------------"
 echo "Actualizando: $DIR"
@@ -37,7 +36,6 @@ if [ -d "$DIR/.git" ]; then
 else
     echo "No es un repositorio git"
 fi
-```
 
 }
 
@@ -47,12 +45,10 @@ echo "-------------------------------------"
 echo "Aplicando tema..."
 echo "-------------------------------------"
 
-```
 node "$BUILD_SCRIPT"
 
 echo
 echo "Tema aplicado correctamente"
-```
 
 }
 
@@ -60,14 +56,12 @@ update_all() {
 update_repo "$AGS_DIR"
 update_repo "$HYPR_DIR"
 
-```
 echo
 echo "-------------------------------------"
 echo "Actualizando SDDM"
 echo "-------------------------------------"
 
 sudo git -C "$SDDM_DIR" pull
-```
 
 }
 

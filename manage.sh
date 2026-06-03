@@ -4,6 +4,7 @@ set -e
 
 AGS_DIR="$HOME/.config/ags"
 HYPR_DIR="$HOME/.config/hypr"
+GRUB_DIR="$HOME/.config/grub-theme"
 SDDM_DIR="/usr/share/sddm/themes/silent"
 
 THEME_DIR="$HOME/.config/shiro-theme"
@@ -55,6 +56,7 @@ echo "Tema aplicado correctamente"
 update_all() {
 update_repo "$AGS_DIR"
 update_repo "$HYPR_DIR"
+update_repo "$GRUB_DIR"
 
 echo
 echo "-------------------------------------"

@@ -1,5 +1,6 @@
 {
-  "name": "Kurisu Neon Void",
+  "name": "Kurisu Neon",
+  "bootMessage": "El Psy Kongroo",
 
   "base": "#040509",
   "text": "#e8ecff",

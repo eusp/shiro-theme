@@ -1,5 +1,6 @@
 {
   "name": "Violet Night",
+  "bootMessage": "",
 
   "base": "#08060d",
   "text": "#f0eef5",

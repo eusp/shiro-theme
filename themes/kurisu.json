@@ -1,0 +1,31 @@
+{
+  "name": "Kurisu Neon Void",
+
+  "base": "#040509",
+  "text": "#e8ecff",
+  "subtext0": "#9ba6d9",
+
+  "surface0": "#0c1020",
+  "surface1": "#141b33",
+  "surface2": "#1f2950",
+
+  "overlay0": "#24315f",
+  "overlay1": "#35488a",
+
+  "primary": "#6d7cff",
+  "primaryAlt": "#9ca7ff",
+  "primaryMuted": "#4a569a",
+
+  "danger": "#a33456",
+  "warning": "#d3c17d",
+  "success": "#65a6b3",
+  "info": "#8ea7ff",
+
+  "accent0": "#d7deff",
+  "accent1": "#a9b8ff",
+  "accent2": "#7b88ff",
+  "accent3": "#eef1ff",
+
+  "mantle": "#070910",
+  "crust": "#020307"
+}

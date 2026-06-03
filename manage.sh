@@ -40,6 +40,7 @@ echo "-------------------------------------"
 
 if [ -d "$DIR/.git" ]; then
     if [ -n "$SUDO_USER" ]; then
+        chown -R "$SUDO_USER:$SUDO_USER" "$DIR"
         sudo -u "$SUDO_USER" git -c safe.directory="$DIR" -C "$DIR" pull
     else
         git -c safe.directory="$DIR" -C "$DIR" pull

@@ -33,7 +33,6 @@ const theme =
 const wallpaperVideo =
   path.join(
     ROOT,
-    "assets",
     "wallpapers",
     `${CURRENT_THEME}.mp4`
   );
@@ -41,7 +40,6 @@ const wallpaperVideo =
 const wallpaperImage =
   path.join(
     ROOT,
-    "assets",
     "wallpapers",
     `${CURRENT_THEME}.png`
   );

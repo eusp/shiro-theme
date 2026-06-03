@@ -34,8 +34,9 @@ const SOURCE_DIR =
     ".config/grub-theme"
   );
 
-const INSTALL_DIR =
-  "/boot/grub2/themes/Matrices-circle-window";
+const hasGrub2 = fs.existsSync("/boot/grub2");
+const GRUB_BASE_DIR = hasGrub2 ? "/boot/grub2" : "/boot/grub";
+const INSTALL_DIR = path.join(GRUB_BASE_DIR, "themes/Matrices-circle-window");
 
 //
 // Ensure directories
@@ -207,9 +208,6 @@ console.log(
 const primaryColor =
   hexToRgb(theme.primary);
 
-const borderColor =
-  hexToRgb(theme.primaryMuted);
-
 //
 // select_c.png
 //
@@ -219,27 +217,23 @@ savePng(
     SOURCE_DIR,
     "select_c.png"
   ),
-  113,
-  12,
+  16,
+  48,
   (x, y) => {
+    const dy = y - 23.5;
+    const dist = Math.abs(dy);
 
-    const border =
-      y >= 10;
+    if (dist > 23.5) {
+      return { r: 0, g: 0, b: 0, a: 0 };
+    }
+
+    const isBorder = dist >= 21.5;
 
     return {
-      r: border
-        ? borderColor.r
-        : primaryColor.r,
-
-      g: border
-        ? borderColor.g
-        : primaryColor.g,
-
-      b: border
-        ? borderColor.b
-        : primaryColor.b,
-
-      a: 255,
+      r: primaryColor.r,
+      g: primaryColor.g,
+      b: primaryColor.b,
+      a: isBorder ? 255 : 40,
     };
   }
 );
@@ -253,30 +247,24 @@ savePng(
     SOURCE_DIR,
     "select_w.png"
   ),
-  16,
   24,
+  48,
   (x, y) => {
+    const dx = x - 23.5;
+    const dy = y - 23.5;
+    const dist = Math.sqrt(dx * dx + dy * dy);
 
-    const draw =
-      x < 10 ||
-      y < 18;
+    if (dist > 23.5) {
+      return { r: 0, g: 0, b: 0, a: 0 };
+    }
+
+    const isBorder = dist >= 21.5;
 
     return {
-      r: draw
-        ? primaryColor.r
-        : 0,
-
-      g: draw
-        ? primaryColor.g
-        : 0,
-
-      b: draw
-        ? primaryColor.b
-        : 0,
-
-      a: draw
-        ? 255
-        : 0,
+      r: primaryColor.r,
+      g: primaryColor.g,
+      b: primaryColor.b,
+      a: isBorder ? 255 : 40,
     };
   }
 );
@@ -290,30 +278,24 @@ savePng(
     SOURCE_DIR,
     "select_e.png"
   ),
-  16,
   24,
+  48,
   (x, y) => {
+    const dx = x - 0.5;
+    const dy = y - 23.5;
+    const dist = Math.sqrt(dx * dx + dy * dy);
 
-    const draw =
-      x > 5 ||
-      y < 18;
+    if (dist > 23.5) {
+      return { r: 0, g: 0, b: 0, a: 0 };
+    }
+
+    const isBorder = dist >= 21.5;
 
     return {
-      r: draw
-        ? primaryColor.r
-        : 0,
-
-      g: draw
-        ? primaryColor.g
-        : 0,
-
-      b: draw
-        ? primaryColor.b
-        : 0,
-
-      a: draw
-        ? 255
-        : 0,
+      r: primaryColor.r,
+      g: primaryColor.g,
+      b: primaryColor.b,
+      a: isBorder ? 255 : 40,
     };
   }
 );
@@ -345,6 +327,65 @@ console.log(
 );
 
 //
+// Update /etc/default/grub
+//
+
+function updateGrubConfig(themePath) {
+  const configPath = "/etc/default/grub";
+  if (!fs.existsSync(configPath)) {
+    console.warn(`⚠️ Warning: ${configPath} not found. Skipping auto-configuration.`);
+    return;
+  }
+
+  // Backup original config
+  try {
+    fs.copyFileSync(configPath, `${configPath}.bak`);
+    console.log(`✓ Backed up ${configPath} to ${configPath}.bak`);
+  } catch (err) {
+    console.error(`⚠️ Warning: Failed to backup ${configPath}: ${err.message}`);
+  }
+
+  let content = fs.readFileSync(configPath, "utf8");
+  let modified = false;
+
+  // 1. Set GRUB_THEME
+  const themeLine = `GRUB_THEME="${themePath}"`;
+  if (content.match(/^GRUB_THEME=/m)) {
+    content = content.replace(/^GRUB_THEME=.*/m, themeLine);
+    modified = true;
+  } else if (content.match(/^#\s*GRUB_THEME=/m)) {
+    content = content.replace(/^#\s*GRUB_THEME=.*/m, themeLine);
+    modified = true;
+  } else {
+    content += `\n${themeLine}\n`;
+    modified = true;
+  }
+
+  // 2. Ensure GRUB_TERMINAL_OUTPUT is not console (gfxterm is required for themes)
+  if (content.match(/^GRUB_TERMINAL_OUTPUT=['"]?console['"]?/m)) {
+    content = content.replace(/^GRUB_TERMINAL_OUTPUT=['"]?console['"]?/m, 'GRUB_TERMINAL_OUTPUT="gfxterm"');
+    modified = true;
+  } else if (!content.match(/^GRUB_TERMINAL_OUTPUT=/m)) {
+    content += `\nGRUB_TERMINAL_OUTPUT="gfxterm"\n`;
+    modified = true;
+  }
+
+  // 3. Ensure GRUB_TIMEOUT_STYLE is set to menu instead of hidden, so the theme is visible
+  if (content.match(/^GRUB_TIMEOUT_STYLE=['"]?hidden['"]?/m)) {
+    content = content.replace(/^GRUB_TIMEOUT_STYLE=['"]?hidden['"]?/m, 'GRUB_TIMEOUT_STYLE="menu"');
+    modified = true;
+  }
+
+  if (modified) {
+    fs.writeFileSync(configPath, content, "utf8");
+    console.log("✓ Updated /etc/default/grub configuration");
+  }
+}
+
+const themeTxtPath = path.join(INSTALL_DIR, "theme.txt");
+updateGrubConfig(themeTxtPath);
+
+//
 // Rebuild grub.cfg
 //
 
@@ -353,8 +394,21 @@ console.log(
   "Updating grub.cfg..."
 );
 
+let grubMkconfig;
+try {
+  grubMkconfig = execSync("which grub2-mkconfig 2>/dev/null || which grub-mkconfig 2>/dev/null").toString().trim();
+} catch (e) {
+  // If which fails or returns empty
+}
+
+if (!grubMkconfig) {
+  grubMkconfig = hasGrub2 ? "grub2-mkconfig" : "grub-mkconfig";
+}
+
+const grubCfgPath = path.join(GRUB_BASE_DIR, "grub.cfg");
+
 execSync(
-  "grub2-mkconfig -o /boot/grub2/grub.cfg",
+  `${grubMkconfig} -o ${grubCfgPath}`,
   {
     stdio: "inherit",
   }

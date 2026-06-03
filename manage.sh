@@ -40,9 +40,9 @@ echo "-------------------------------------"
 
 if [ -d "$DIR/.git" ]; then
     if [ -n "$SUDO_USER" ]; then
-        sudo -u "$SUDO_USER" git -C "$DIR" pull
+        sudo -u "$SUDO_USER" git -c safe.directory="$DIR" -C "$DIR" pull
     else
-        git -C "$DIR" pull
+        git -c safe.directory="$DIR" -C "$DIR" pull
     fi
 else
     echo "No es un repositorio git"
@@ -115,7 +115,7 @@ echo "-------------------------------------"
 echo "Actualizando SDDM"
 echo "-------------------------------------"
 
-sudo git -C "$SDDM_DIR" pull
+sudo git -c safe.directory="$SDDM_DIR" -C "$SDDM_DIR" pull
 
 }
 

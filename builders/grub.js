@@ -13,10 +13,10 @@ const {
 //
 
 if (process.getuid() !== 0) {
-  console.error(
-    "This script must be run with sudo"
+  console.warn(
+    "⚠️  GRUB theme skipped (not root) — run with sudo to apply GRUB"
   );
-  process.exit(1);
+  return;
 }
 
 //

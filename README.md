@@ -67,7 +67,7 @@ shiro-theme/
 ├── wallpapers/        # Wallpaper por tema (.png y/o .mp4)
 ├── builders/          # Generadores por target
 │   ├── ags.js         → ~/.config/ags/styles/colors.scss
-│   ├── hyprland.js    → ~/.config/hypr/conf/colors.conf + wallpapers/
+│   ├── hyprland.js    → ~/.config/hypr/conf/colors.lua + wallpapers/
 │   ├── sddm.js        → /usr/share/sddm/themes/silent/
 │   └── grub.js        → ~/.config/grub-theme/
 ├── shared.js          # Lee current-theme y exporta el JSON

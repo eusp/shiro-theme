@@ -15,13 +15,15 @@ Sistema de temas centralizado para el escritorio Hyprland. Aplica un tema de for
 
 ### Desde AGS (hot-reload)
 
-El RightMenu de AGS incluye un selector de temas integrado. Al hacer clic en un tema:
+El RightMenu de AGS incluye un selector de temas integrado. Cada tarjeta de tema tiene dos íconos — animado (`.mp4`) y estático (`.png`) — que aplican ese tema con el fondo en el modo elegido. Al hacer clic:
 
 1. Los colores de AGS cambian instantáneamente (sin reiniciar).
-2. `build.js` se ejecuta en segundo plano — actualiza AGS, Hyprland y SDDM.
+2. `build.js` se ejecuta en segundo plano — actualiza AGS y Hyprland. Si además tenés permisos de escritura en `/usr/share/sddm` (por ejemplo corriendo `manage.sh` con `sudo`), también actualiza SDDM; si no, lo salta con un aviso sin frenar el resto.
 3. Hyprland recarga su configuración → los bordes de ventana cambian al color del nuevo tema.
-4. El fondo de pantalla se recarga via `~/.config/hypr/scripts/change-wallpaper.sh`.
+4. El fondo de pantalla se recarga via `~/.config/hypr/scripts/change-wallpaper.sh`, respetando el modo (animado/estático) que hayas elegido — guardado en `wallpaper-mode`.
 5. GRUB se actualiza con `sudo -n node build-grub.js` (requiere regla sudoers, ver abajo).
+
+`build.js` nunca toca GRUB directamente — eso es trabajo exclusivo de `build-grub.js`, porque escribir en `/boot` necesita root y `build.js` está pensado para correr sin privilegios (así el hot-reload desde AGS no se cae).
 
 ### Desde terminal
 
@@ -30,10 +32,11 @@ sudo bash manage.sh
 ```
 
 Menú interactivo con opciones:
-1. **Actualizar repositorios** — hace `git pull` en shiro-theme y ags
+1. **Actualizar repositorios** — hace `git pull` en ags, hypr, grub-theme y sddm. Si hay cambios locales en conflicto, pregunta si sobrescribirlos o dejar ese repo como está.
 2. **Aplicar tema** — selecciona un tema y lo genera
 3. **Actualizar + Aplicar** — combina las dos anteriores
-4. **Salir**
+4. **Subir cambios a GitHub** — revisa shiro-theme, ags, hypr, grub-theme y sddm; si hay cambios sin confirmar te pregunta el mensaje de commit, y sube (`git push`) lo que esté adelantado al remoto
+5. **Salir**
 
 También puedes aplicar solo un builder específico:
 
@@ -71,7 +74,8 @@ shiro-theme/
 ├── build.js           # Ejecuta builders de AGS, Hyprland y SDDM (sin root)
 ├── build-grub.js      # Ejecuta solo el builder de GRUB (requiere sudo)
 ├── manage.sh          # Menú de administración interactivo
-└── current-theme      # Nombre del tema activo (texto plano)
+├── current-theme      # Nombre del tema activo (texto plano)
+└── wallpaper-mode     # "animated" o "static" — qué fondo usar (texto plano)
 ```
 
 ## Cómo funciona el hot-reload de colores

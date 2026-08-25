@@ -44,28 +44,36 @@ QtObject {
 }
 `;
 
-fs.writeFileSync(
-  "/usr/share/sddm/themes/silent/components/Colors.qml",
-  qml
-);
-
-const targetDir = "/usr/share/sddm/themes/silent/backgrounds";
-if (!fs.existsSync(targetDir)) {
-  fs.mkdirSync(targetDir, { recursive: true });
-}
-
-if (fs.existsSync(wallpaperVideo)) {
-  fs.copyFileSync(
-    wallpaperVideo,
-    `${targetDir}/background.mp4`
+// /usr/share/sddm is root-owned. When this runs unprivileged (e.g. the
+// hot-reload triggered from AGS, not `sudo ./manage.sh`), these writes fail
+// with EACCES — that must not crash the rest of build.js (AGS/Hyprland still
+// need to apply). Run `sudo ./manage.sh` to actually sync the SDDM theme.
+try {
+  fs.writeFileSync(
+    "/usr/share/sddm/themes/silent/components/Colors.qml",
+    qml
   );
-}
 
-if (fs.existsSync(wallpaperImage)) {
-  fs.copyFileSync(
-    wallpaperImage,
-    `${targetDir}/background.png`
-  );
-}
+  const targetDir = "/usr/share/sddm/themes/silent/backgrounds";
+  if (!fs.existsSync(targetDir)) {
+    fs.mkdirSync(targetDir, { recursive: true });
+  }
 
-console.log("✓ SDDM");
+  if (fs.existsSync(wallpaperVideo)) {
+    fs.copyFileSync(
+      wallpaperVideo,
+      `${targetDir}/background.mp4`
+    );
+  }
+
+  if (fs.existsSync(wallpaperImage)) {
+    fs.copyFileSync(
+      wallpaperImage,
+      `${targetDir}/background.png`
+    );
+  }
+
+  console.log("✓ SDDM");
+} catch (e) {
+  console.warn(`⚠ SDDM sin permisos para escribir (correr "sudo ./manage.sh" para sincronizarlo): ${e.message}`);
+}

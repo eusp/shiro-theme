@@ -11,7 +11,6 @@ console.log("");
 require("./builders/ags");
 require("./builders/hyprland");
 require("./builders/sddm");
-require("./builders/grub");
 
 console.log("");
 console.log(`✓ Theme applied: ${CURRENT_THEME}`);

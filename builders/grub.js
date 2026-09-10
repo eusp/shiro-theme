@@ -132,8 +132,6 @@ desktop-color: "${theme.base}"
 
 terminal-font: "Terminus Regular 14"
 
-terminal-box: "terminal_box_*.png"
-
 terminal-left: "0"
 terminal-top: "0"
 
@@ -313,12 +311,23 @@ console.log(
   "Installing GRUB theme..."
 );
 
+// Clean install so removed files don't linger in /boot
+// (grub-mkconfig runs loadfont on every *.pf2 in the theme dir)
+fs.rmSync(
+  INSTALL_DIR,
+  {
+    recursive: true,
+    force: true,
+  }
+);
+
 fs.cpSync(
   SOURCE_DIR,
   INSTALL_DIR,
   {
     recursive: true,
     force: true,
+    filter: (src) => path.basename(src) !== ".git",
   }
 );
 

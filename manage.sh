@@ -2,18 +2,10 @@
 
 set -e
 
-if [ -n "$SUDO_USER" ]; then
-    USER_HOME="/home/$SUDO_USER"
-else
-    USER_HOME="$HOME"
-fi
+SCRIPT_DIR="$(cd -- "$(dirname -- "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
+# shellcheck source=projects.sh
+source "$SCRIPT_DIR/projects.sh"
 
-AGS_DIR="$USER_HOME/.config/ags"
-HYPR_DIR="$USER_HOME/.config/hypr"
-GRUB_DIR="$USER_HOME/.config/grub-theme"
-SDDM_DIR="/usr/share/sddm/themes/shiro-sddm"
-
-THEME_DIR="$USER_HOME/.config/shiro-theme"
 BUILD_SCRIPT="$THEME_DIR/build.js"
 
 clear
@@ -26,7 +18,8 @@ echo "1) Actualizar repositorios"
 echo "2) Aplicar tema"
 echo "3) Actualizar + Aplicar tema"
 echo "4) Subir cambios a GitHub"
-echo "5) Salir"
+echo "5) Instalar / importar proyectos (install.sh)"
+echo "6) Salir"
 echo
 
 read -rp "Opción: " OPTION
@@ -150,17 +143,10 @@ echo "Tema aplicado correctamente"
 }
 
 update_all() {
-update_repo "$AGS_DIR"
-update_repo "$HYPR_DIR"
-update_repo "$GRUB_DIR"
-
-echo
-echo "-------------------------------------"
-echo "Actualizando SDDM"
-echo "-------------------------------------"
-
-git_pull_confirm "$SDDM_DIR" || true
-
+local entry
+for entry in "${SHIRO_PROJECTS[@]}"; do
+    update_repo "$(echo "$entry" | cut -d'|' -f3)"
+done
 }
 
 push_repo() {
@@ -227,11 +213,10 @@ fi
 }
 
 push_all() {
-push_repo "$THEME_DIR" || true
-push_repo "$AGS_DIR" || true
-push_repo "$HYPR_DIR" || true
-push_repo "$GRUB_DIR" || true
-push_repo "$SDDM_DIR" || true
+local dir
+while read -r dir; do
+    push_repo "$dir" || true
+done < <(shiro_repo_dirs)
 }
 
 case "$OPTION" in
@@ -251,6 +236,12 @@ apply_theme
 push_all
 ;;
 5)
+if [ -n "$SUDO_USER" ]; then
+    exec sudo -u "$SUDO_USER" bash "$THEME_DIR/install.sh"
+fi
+exec bash "$THEME_DIR/install.sh"
+;;
+6)
 exit 0
 ;;
 *)

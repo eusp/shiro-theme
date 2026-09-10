@@ -5,6 +5,7 @@ const { PNG } = require("pngjs");
 
 const {
   theme,
+  GRUB_DIR,
   wallpaperImage,
 } = require("../shared");
 
@@ -20,23 +21,42 @@ if (process.getuid() !== 0) {
 }
 
 //
+// GRUB check — CachyOS instala Limine por defecto; sin GRUB no hay nada que tocar
+//
+
+function findGrubMkconfig() {
+  try {
+    return execSync(
+      "command -v grub2-mkconfig || command -v grub-mkconfig",
+      { shell: "/bin/sh" }
+    ).toString().trim();
+  } catch (e) {
+    return "";
+  }
+}
+
+const grubMkconfig = findGrubMkconfig();
+
+if (!grubMkconfig) {
+  console.warn(
+    "⚠️  GRUB theme skipped — grub-mkconfig not found (¿el sistema usa Limine/systemd-boot?)"
+  );
+  return;
+}
+
+//
 // Paths
 //
 
-const HOME =
-  process.env.SUDO_USER
-    ? `/home/${process.env.SUDO_USER}`
-    : process.env.HOME;
-
-const SOURCE_DIR =
-  path.join(
-    HOME,
-    ".config/grub-theme"
-  );
+const SOURCE_DIR = GRUB_DIR;
 
 const hasGrub2 = fs.existsSync("/boot/grub2");
 const GRUB_BASE_DIR = hasGrub2 ? "/boot/grub2" : "/boot/grub";
-const INSTALL_DIR = path.join(GRUB_BASE_DIR, "themes/Matrices-circle-window");
+const THEMES_DIR = path.join(GRUB_BASE_DIR, "themes");
+const INSTALL_DIR = path.join(THEMES_DIR, "shiro-grub");
+
+// Nombre anterior del tema instalado (antes del renombrado a shiro-grub)
+const LEGACY_INSTALL_DIR = path.join(THEMES_DIR, "Matrices-circle-window");
 
 //
 // Ensure directories
@@ -313,13 +333,18 @@ console.log(
 
 // Clean install so removed files don't linger in /boot
 // (grub-mkconfig runs loadfont on every *.pf2 in the theme dir)
-fs.rmSync(
-  INSTALL_DIR,
-  {
-    recursive: true,
-    force: true,
-  }
-);
+for (const dir of [INSTALL_DIR, LEGACY_INSTALL_DIR]) {
+  fs.rmSync(
+    dir,
+    {
+      recursive: true,
+      force: true,
+    }
+  );
+}
+
+// Repo-only files that don't belong in /boot
+const SKIP_FILES = new Set([".git", ".gitignore", "README.md"]);
 
 fs.cpSync(
   SOURCE_DIR,
@@ -327,7 +352,7 @@ fs.cpSync(
   {
     recursive: true,
     force: true,
-    filter: (src) => path.basename(src) !== ".git",
+    filter: (src) => !SKIP_FILES.has(path.basename(src)),
   }
 );
 
@@ -402,17 +427,6 @@ console.log("");
 console.log(
   "Updating grub.cfg..."
 );
-
-let grubMkconfig;
-try {
-  grubMkconfig = execSync("which grub2-mkconfig 2>/dev/null || which grub-mkconfig 2>/dev/null").toString().trim();
-} catch (e) {
-  // If which fails or returns empty
-}
-
-if (!grubMkconfig) {
-  grubMkconfig = hasGrub2 ? "grub2-mkconfig" : "grub-mkconfig";
-}
 
 const grubCfgPath = path.join(GRUB_BASE_DIR, "grub.cfg");
 

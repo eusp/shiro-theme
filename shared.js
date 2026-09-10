@@ -44,6 +44,13 @@ const wallpaperImage =
     `${CURRENT_THEME}.png`
   );
 
+// Carpetas reales de cada proyecto (mismo esquema que projects.sh).
+// ~/.config/ags y ~/.config/hypr son symlinks a estas carpetas.
+const AGS_DIR = path.join(HOME, ".config/shiro-ags");
+const HYPR_DIR = path.join(HOME, ".config/shiro-hyprland");
+const GRUB_DIR = path.join(HOME, ".config/shiro-grub");
+const SDDM_DIR = "/usr/share/sddm/themes/shiro-sddm";
+
 function stripHash(color) {
   if (!color) return "000000";
   return color.replace("#", "");
@@ -55,6 +62,10 @@ module.exports = {
   HOME,
   ROOT,
   CURRENT_THEME,
+  AGS_DIR,
+  HYPR_DIR,
+  GRUB_DIR,
+  SDDM_DIR,
   theme,
   stripHash,
   wallpaperVideo,

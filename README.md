@@ -2,6 +2,29 @@
 
 Sistema de temas centralizado para el escritorio Hyprland. Aplica un tema de forma simultánea a AGS, Hyprland, SDDM y GRUB desde un único archivo JSON. Soporta cambio de tema en caliente desde el widget de AGS sin reiniciar nada.
 
+Es el repo que une todos los proyectos Shiro: los instala (`install.sh`), los actualiza y sube (`manage.sh`) y les genera los colores (`builders/`).
+
+## Proyectos
+
+| Proyecto | Carpeta | Qué es |
+|----------|---------|--------|
+| [shiro-theme](https://github.com/eusp/shiro-theme) | `~/.config/shiro-theme` | Este repo: temas, builders e instalador |
+| [shiro-ags](https://github.com/eusp/shiro-ags) | `~/.config/shiro-ags` (symlink `~/.config/ags`) | Shell AGS v3: barras, menús, selector de temas |
+| [shiro-hyprland](https://github.com/eusp/shiro-hyprland) | `~/.config/shiro-hyprland` (symlink `~/.config/hypr`) | Configuración de Hyprland en Lua |
+| [shiro-sddm](https://github.com/eusp/shiro-sddm) | `/usr/share/sddm/themes/shiro-sddm` | Tema de la pantalla de login |
+| [shiro-grub](https://github.com/eusp/shiro-grub) | `~/.config/shiro-grub` → `/boot/grub*/themes/shiro-grub` | Tema del menú de arranque |
+
+Los symlinks existen porque Hyprland solo lee `~/.config/hypr` y `ags run` usa `~/.config/ags` por defecto. Las carpetas de cada proyecto están definidas en `projects.sh` (scripts de bash) y `shared.js` (builders).
+
+## Instalación en un sistema nuevo
+
+```bash
+git clone https://github.com/eusp/shiro-theme.git ~/.config/shiro-theme
+bash ~/.config/shiro-theme/install.sh
+```
+
+`install.sh` instala dependencias (Arch/CachyOS), clona o migra los proyectos, crea los symlinks, instala SDDM, configura GRUB y aplica el tema. Pasos sueltos: `install.sh projects links apply`. Guía completa de migración desde Nobara: **[CACHYOS.md](CACHYOS.md)**.
+
 ## Temas disponibles
 
 | Tema | Descripción |
@@ -32,11 +55,12 @@ sudo bash manage.sh
 ```
 
 Menú interactivo con opciones:
-1. **Actualizar repositorios** — hace `git pull` en ags, hypr, grub-theme y sddm. Si hay cambios locales en conflicto, pregunta si sobrescribirlos o dejar ese repo como está.
+1. **Actualizar repositorios** — hace `git pull` en shiro-ags, shiro-hyprland, shiro-grub y shiro-sddm. Si hay cambios locales en conflicto, pregunta si sobrescribirlos o dejar ese repo como está.
 2. **Aplicar tema** — selecciona un tema y lo genera
 3. **Actualizar + Aplicar** — combina las dos anteriores
-4. **Subir cambios a GitHub** — revisa shiro-theme, ags, hypr, grub-theme y sddm; si hay cambios sin confirmar te pregunta el mensaje de commit, y sube (`git push`) lo que esté adelantado al remoto
-5. **Salir**
+4. **Subir cambios a GitHub** — revisa shiro-theme y los cuatro proyectos; si hay cambios sin confirmar te pregunta el mensaje de commit, y sube (`git push`) lo que esté adelantado al remoto
+5. **Instalar / importar proyectos** — corre `install.sh` (usarlo sin `sudo`: `bash install.sh`)
+6. **Salir**
 
 También puedes aplicar solo un builder específico:
 
@@ -66,14 +90,17 @@ shiro-theme/
 │   └── violet-night.json
 ├── wallpapers/        # Wallpaper por tema (.png y/o .mp4)
 ├── builders/          # Generadores por target
-│   ├── ags.js         → ~/.config/ags/styles/colors.scss
-│   ├── hyprland.js    → ~/.config/hypr/conf/colors.lua + wallpapers/
+│   ├── ags.js         → ~/.config/shiro-ags/styles/colors.scss
+│   ├── hyprland.js    → ~/.config/shiro-hyprland/conf/colors.lua + wallpapers/
 │   ├── sddm.js        → /usr/share/sddm/themes/shiro-sddm/
-│   └── grub.js        → ~/.config/grub-theme/
-├── shared.js          # Lee current-theme y exporta el JSON
+│   └── grub.js        → ~/.config/shiro-grub/ → /boot/grub*/themes/shiro-grub
+├── shared.js          # Lee current-theme, exporta el JSON y las carpetas de cada proyecto
 ├── build.js           # Ejecuta builders de AGS, Hyprland y SDDM (sin root)
 ├── build-grub.js      # Ejecuta solo el builder de GRUB (requiere sudo)
+├── projects.sh        # Manifiesto de proyectos (repo, carpeta, symlink) para manage.sh e install.sh
+├── install.sh         # Instala / importa / migra todos los proyectos
 ├── manage.sh          # Menú de administración interactivo
+├── CACHYOS.md         # Guía de migración Nobara → CachyOS
 ├── current-theme      # Nombre del tema activo (texto plano)
 └── wallpaper-mode     # "animated" o "static" — qué fondo usar (texto plano)
 ```
@@ -124,7 +151,7 @@ El SCSS no usa variables de Sass (`$var`) — usa `var(--var)` directamente, lo 
 
 ## Configuración de GRUB sin contraseña (desde AGS)
 
-Para que el widget de AGS pueda aplicar el tema de GRUB automáticamente al cambiar tema, necesitas una regla sudoers que permita ejecutar `build-grub.js` sin contraseña:
+Para que el widget de AGS pueda aplicar el tema de GRUB automáticamente al cambiar tema, necesitas una regla sudoers que permita ejecutar `build-grub.js` sin contraseña. `install.sh grub` la crea (validada con `visudo`); a mano:
 
 ```bash
 sudo sh -c 'echo "emerson ALL=(ALL) NOPASSWD: /usr/bin/node /home/emerson/.config/shiro-theme/build-grub.js" > /etc/sudoers.d/shiro-grub && chmod 440 /etc/sudoers.d/shiro-grub'
@@ -141,7 +168,7 @@ Sin esta regla, el GRUB no se actualiza desde el widget (el resto del tema sí a
 ## Requisitos
 
 - Node.js
-- AGS v2 (`ags`) con soporte GTK4/GJS
+- AGS v3 (`ags`) con soporte GTK4/GJS
 - Hyprland con `mpvpaper` (fondos de video) y/o `hyprpaper` (fondos estáticos)
 - SDDM con el tema `shiro-sddm`
-- GRUB (para el builder de grub)
+- GRUB (para el builder de grub; si el sistema usa Limine o systemd-boot, se omite solo)

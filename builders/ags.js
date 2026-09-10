@@ -1,7 +1,7 @@
 const {
   fs,
   path,
-  HOME,
+  AGS_DIR,
   theme,
 } = require("../shared");
 
@@ -75,7 +75,7 @@ const content = `/* AUTO GENERATED — do not edit manually */
 `;
 
 fs.writeFileSync(
-  path.join(HOME, ".config/ags/styles/colors.scss"),
+  path.join(AGS_DIR, "styles/colors.scss"),
   content
 );
 

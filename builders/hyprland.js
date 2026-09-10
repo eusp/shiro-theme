@@ -1,13 +1,13 @@
 const {
   fs,
   path,
-  HOME,
+  HYPR_DIR,
   theme,
   wallpaperVideo,
   wallpaperImage,
 } = require("../shared");
 
-const targetDir = path.join(HOME, ".config/hypr/wallpapers");
+const targetDir = path.join(HYPR_DIR, "wallpapers");
 if (!fs.existsSync(targetDir)) {
   fs.mkdirSync(targetDir, { recursive: true });
 }
@@ -68,10 +68,7 @@ return {
 `;
 
 fs.writeFileSync(
-  path.join(
-    HOME,
-    ".config/hypr/conf/colors.lua"
-  ),
+  path.join(HYPR_DIR, "conf/colors.lua"),
   content
 );
 

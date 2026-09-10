@@ -2,6 +2,7 @@ const fs = require("fs");
 
 const {
   theme,
+  SDDM_DIR,
   wallpaperVideo,
   wallpaperImage,
 } = require("../shared");
@@ -48,7 +49,7 @@ QtObject {
 // hot-reload triggered from AGS, not `sudo ./manage.sh`), these writes fail
 // with EACCES — that must not crash the rest of build.js (AGS/Hyprland still
 // need to apply). Run `sudo ./manage.sh` to actually sync the SDDM theme.
-const sddmDir = "/usr/share/sddm/themes/shiro-sddm";
+const sddmDir = SDDM_DIR;
 
 try {
   fs.writeFileSync(

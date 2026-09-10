@@ -48,13 +48,15 @@ QtObject {
 // hot-reload triggered from AGS, not `sudo ./manage.sh`), these writes fail
 // with EACCES — that must not crash the rest of build.js (AGS/Hyprland still
 // need to apply). Run `sudo ./manage.sh` to actually sync the SDDM theme.
+const sddmDir = "/usr/share/sddm/themes/shiro-sddm";
+
 try {
   fs.writeFileSync(
-    "/usr/share/sddm/themes/silent/components/Colors.qml",
+    `${sddmDir}/components/Colors.qml`,
     qml
   );
 
-  const targetDir = "/usr/share/sddm/themes/silent/backgrounds";
+  const targetDir = `${sddmDir}/backgrounds`;
   if (!fs.existsSync(targetDir)) {
     fs.mkdirSync(targetDir, { recursive: true });
   }

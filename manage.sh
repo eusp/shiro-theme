@@ -11,7 +11,7 @@ fi
 AGS_DIR="$USER_HOME/.config/ags"
 HYPR_DIR="$USER_HOME/.config/hypr"
 GRUB_DIR="$USER_HOME/.config/grub-theme"
-SDDM_DIR="/usr/share/sddm/themes/silent"
+SDDM_DIR="/usr/share/sddm/themes/shiro-sddm"
 
 THEME_DIR="$USER_HOME/.config/shiro-theme"
 BUILD_SCRIPT="$THEME_DIR/build.js"

@@ -68,7 +68,7 @@ shiro-theme/
 ├── builders/          # Generadores por target
 │   ├── ags.js         → ~/.config/ags/styles/colors.scss
 │   ├── hyprland.js    → ~/.config/hypr/conf/colors.lua + wallpapers/
-│   ├── sddm.js        → /usr/share/sddm/themes/silent/
+│   ├── sddm.js        → /usr/share/sddm/themes/shiro-sddm/
 │   └── grub.js        → ~/.config/grub-theme/
 ├── shared.js          # Lee current-theme y exporta el JSON
 ├── build.js           # Ejecuta builders de AGS, Hyprland y SDDM (sin root)
@@ -143,5 +143,5 @@ Sin esta regla, el GRUB no se actualiza desde el widget (el resto del tema sí a
 - Node.js
 - AGS v2 (`ags`) con soporte GTK4/GJS
 - Hyprland con `mpvpaper` (fondos de video) y/o `hyprpaper` (fondos estáticos)
-- SDDM con el tema `silent`
+- SDDM con el tema `shiro-sddm`
 - GRUB (para el builder de grub)

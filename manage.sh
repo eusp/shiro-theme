@@ -85,6 +85,15 @@ else
     echo "No es un repositorio git"
 fi
 
+if [ -f "$DIR/install.sh" ]; then
+    echo "Re-corriendo install.sh de $DIR (por si la actualización trajo dependencias nuevas)..."
+    if [ -n "$SUDO_USER" ]; then
+        sudo -u "$SUDO_USER" bash "$DIR/install.sh"
+    else
+        bash "$DIR/install.sh"
+    fi
+fi
+
 }
 
 select_theme() {

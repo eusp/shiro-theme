@@ -71,7 +71,7 @@ step_deps() {
 
     local -a pkgs=(
         # base
-        git base-devel nodejs npm curl github-cli
+        git base-devel nodejs npm curl github-cli ntfs-3g
         # Hyprland
         hyprland hyprpaper hyprlock xdg-desktop-portal-hyprland lxqt-policykit
         wl-clipboard cliphist grim slurp ptyxis nautilus

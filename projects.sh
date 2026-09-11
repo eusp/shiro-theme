@@ -21,6 +21,7 @@ SHIRO_PROJECTS=(
     "shiro-ags|shiro-ags|$USER_HOME/.config/shiro-ags|$USER_HOME/.config/ags|$USER_HOME/.config/ags"
     "shiro-hyprland|shiro-hyprland|$USER_HOME/.config/shiro-hyprland|$USER_HOME/.config/hypr|$USER_HOME/.config/hypr"
     "shiro-grub|shiro-grub|$USER_HOME/.config/shiro-grub||$USER_HOME/.config/grub-theme"
+    "shiro-limine|shiro-limine|$USER_HOME/.config/shiro-limine||"
     "shiro-sddm|shiro-sddm|$SDDM_DIR||/usr/share/sddm/themes/silent"
 )
 

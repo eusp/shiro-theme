@@ -1,8 +1,8 @@
 # Migración de Nobara a CachyOS
 
-Guía para pasar el escritorio Shiro de Nobara (Fedora) a CachyOS (Arch). Resumen: **los cinco
-proyectos funcionan en CachyOS**. Solo shiro-grub tiene una condición: hay que elegir GRUB en el
-instalador. Todo lo demás lo resuelve `install.sh`.
+Guía para pasar el escritorio Shiro de Nobara (Fedora) a CachyOS (Arch). Resumen: **todos los
+proyectos funcionan en CachyOS**, con GRUB o con Limine como bootloader (hay un tema para cada uno).
+Todo lo resuelve `install.sh`.
 
 ## ¿Se puede mudar cada proyecto?
 
@@ -12,7 +12,9 @@ instalador. Todo lo demás lo resuelve `install.sh`.
 | **shiro-ags** | ✅ Sí | Astal core viene de AUR (`libastal-io-git`, `libastal-4-git`) en vez del COPR `sdegler/hyprland`. AGS se sigue compilando desde el código fuente en `/usr/local`. El código no depende de la distro (`lib/` habla directo con D-Bus, `hyprctl`, `wpctl`). |
 | **shiro-hyprland** | ✅ Sí | Hyprland viene de los repos oficiales (siempre al día, sin COPR). `mpvpaper` viene de AUR. El agente polkit ahora se busca en `/usr/libexec` y en `/usr/bin` (`scripts/polkit-agent.sh`). Revisar `conf/monitors.lua`. |
 | **shiro-sddm** | ✅ Sí | Su `install.sh` ya soporta `pacman` (`qt6-svg`, `qt6-multimedia-ffmpeg`, `qt6-virtualkeyboard`). Además, en CachyOS no existe el problema del nobara-updater que cambiaba SDDM por plasma-login-manager. |
-| **shiro-grub** | ⚠️ Solo con GRUB | Desde enero de 2026 el instalador de CachyOS trae **Limine** por defecto. Si eliges Limine o systemd-boot, el builder de GRUB se omite solo (no rompe nada, pero no hay tema de arranque). Las rutas (`/boot/grub` en vez de `/boot/grub2`, `grub-mkconfig` en vez de `grub2-mkconfig`) se detectan solas. |
+| **shiro-grub** | ✅ Si eliges GRUB | Las rutas (`/boot/grub` en vez de `/boot/grub2`, `grub-mkconfig` en vez de `grub2-mkconfig`) se detectan solas. |
+| **shiro-limine** | ✅ Si eliges Limine | Nuevo. Limine es el bootloader por defecto de CachyOS desde enero de 2026. El builder agrega fondo y colores a `limine.conf` sin tocar las entradas. **No probado todavía en un Limine real.** Personaliza menos que GRUB (sin posición del menú, iconos ni fuentes). |
+| systemd-boot | — | Sin tema de arranque; los builders se omiten solos. |
 
 ## 1. Antes de formatear (en Nobara)
 
@@ -32,7 +34,14 @@ instalador. Todo lo demás lo resuelve `install.sh`.
 
 ## 2. Durante la instalación de CachyOS
 
-- **Bootloader**: elige **GRUB** si quieres shiro-grub (Limine viene marcado por defecto).
+- **Bootloader**: cualquiera de los dos tiene tema; `build-boot.js` detecta cuál hay.
+  - **Limine** (por defecto): más simple y rápido, integrado con los snapshots de btrfs
+    (`limine-snapper-sync`). Los kernels van en la partición EFI: conviene que tenga 1–2 GB. Si
+    Windows está en otro disco u otra partición EFI, puede que haya que agregar su entrada a mano.
+  - **GRUB**: el tema es más completo (menú a la izquierda, resaltado propio, fuentes) y detecta
+    Windows en cualquier disco con `os-prober`. Para snapshots en el menú: `grub-btrfs`.
+  - **No actives Secure Boot con enrolado del config de Limine** (`ENABLE_ENROLL_LIMINE_CONFIG`):
+    con eso shiro-limine no puede editar `limine.conf` y se omite.
 - **Escritorio**: elige **Hyprland**. **No** elijas *Hyprland Noctalia*: trae su propio shell, que
   compite con AGS por las notificaciones, el tray y la barra. Si el perfil trae otro gestor de
   login, el paso `sddm` de `install.sh` lo cambia por SDDM.
@@ -59,8 +68,8 @@ cambio (`-y` para aceptar todo). Es idempotente: puedes volver a correrlo, o cor
 | `projects` | Clona los proyectos (o migra carpetas con el nombre antiguo) y deja todo a nombre del usuario. |
 | `links` | `~/.config/ags → shiro-ags` y `~/.config/hypr → shiro-hyprland` (la config por defecto de CachyOS queda en `*.bak-FECHA`). Habilita `normalize-volume.service`. |
 | `sddm` | Corre `shiro-sddm/install.sh` (dependencias, fuentes, `/etc/sddm.conf.d/shiro-sddm.conf`) y activa SDDM como gestor de login. |
-| `grub` | Si hay GRUB, crea `/etc/sudoers.d/shiro-grub` para que AGS aplique GRUB sin contraseña. |
-| `apply` | `node build.js` + `sudo node build-grub.js` con el tema de `current-theme`. |
+| `boot` | Detecta GRUB o Limine y crea `/etc/sudoers.d/shiro-boot` para que AGS aplique el tema de arranque sin contraseña. |
+| `apply` | `node build.js` + `sudo node build-boot.js` con el tema de `current-theme`. |
 
 Después:
 
@@ -71,11 +80,11 @@ Después:
 
 ## 4. Verificación
 
-- [ ] El arranque muestra el tema de GRUB (si elegiste GRUB).
+- [ ] El arranque muestra el tema (GRUB o Limine). Con Limine, si algo se ve mal: `sudo cp /boot/limine.conf.shiro-orig /boot/limine.conf` y avísame.
 - [ ] SDDM muestra shiro-sddm con el fondo animado.
 - [ ] Hyprland arranca con AGS y el fondo. Si AGS no aparece: `ags quit; ags run ~/.config/ags/app.ts`.
 - [ ] Cambiar de tema desde el RightMenu cambia colores, bordes y fondo al instante.
-- [ ] `sudo -n node ~/.config/shiro-theme/build-grub.js` corre sin pedir contraseña.
+- [ ] `sudo -n node ~/.config/shiro-theme/build-boot.js` corre sin pedir contraseña.
 - [ ] `systemctl --user status normalize-volume` está activo.
 - [ ] `getent hosts nobara-laptop.local` resuelve (necesario para enviar audio al laptop).
 
@@ -99,11 +108,12 @@ los builders escriben en `~/.config/shiro-ags`:
 
 ```bash
 git -C ~/.config/shiro-theme pull
-bash ~/.config/shiro-theme/install.sh projects links sddm apply
+bash ~/.config/shiro-theme/install.sh projects links sddm boot apply
 ```
 
 `projects` renombra `~/.config/ags`, `~/.config/hypr`, `~/.config/grub-theme` (y
-`/usr/share/sddm/themes/silent`, si existe) a sus nombres `shiro-*`, y deja los symlinks.
+`/usr/share/sddm/themes/silent`, si existe) a sus nombres `shiro-*`, clona shiro-limine y deja
+los symlinks. `boot` cambia la regla sudoers `shiro-grub` por `shiro-boot`, que es la que usa AGS.
 
 ## Pendientes conocidos (no bloquean la migración)
 

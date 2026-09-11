@@ -1,6 +1,6 @@
 # Shiro Theme
 
-Sistema de temas centralizado para el escritorio Hyprland. Aplica un tema de forma simultánea a AGS, Hyprland, SDDM y GRUB desde un único archivo JSON. Soporta cambio de tema en caliente desde el widget de AGS sin reiniciar nada.
+Sistema de temas centralizado para el escritorio Hyprland. Aplica un tema de forma simultánea a AGS, Hyprland, SDDM y el bootloader (GRUB o Limine) desde un único archivo JSON. Soporta cambio de tema en caliente desde el widget de AGS sin reiniciar nada.
 
 Es el repo que une todos los proyectos Shiro: los instala (`install.sh`), los actualiza y sube (`manage.sh`) y les genera los colores (`builders/`).
 
@@ -12,7 +12,8 @@ Es el repo que une todos los proyectos Shiro: los instala (`install.sh`), los ac
 | [shiro-ags](https://github.com/eusp/shiro-ags) | `~/.config/shiro-ags` (symlink `~/.config/ags`) | Shell AGS v3: barras, menús, selector de temas |
 | [shiro-hyprland](https://github.com/eusp/shiro-hyprland) | `~/.config/shiro-hyprland` (symlink `~/.config/hypr`) | Configuración de Hyprland en Lua |
 | [shiro-sddm](https://github.com/eusp/shiro-sddm) | `/usr/share/sddm/themes/shiro-sddm` | Tema de la pantalla de login |
-| [shiro-grub](https://github.com/eusp/shiro-grub) | `~/.config/shiro-grub` → `/boot/grub*/themes/shiro-grub` | Tema del menú de arranque |
+| [shiro-grub](https://github.com/eusp/shiro-grub) | `~/.config/shiro-grub` → `/boot/grub*/themes/shiro-grub` | Tema de arranque si el sistema usa GRUB |
+| [shiro-limine](https://github.com/eusp/shiro-limine) | `~/.config/shiro-limine` → bloque en `limine.conf` | Tema de arranque si el sistema usa Limine |
 
 Los symlinks existen porque Hyprland solo lee `~/.config/hypr` y `ags run` usa `~/.config/ags` por defecto. Las carpetas de cada proyecto están definidas en `projects.sh` (scripts de bash) y `shared.js` (builders).
 
@@ -23,7 +24,7 @@ git clone https://github.com/eusp/shiro-theme.git ~/.config/shiro-theme
 bash ~/.config/shiro-theme/install.sh
 ```
 
-`install.sh` instala dependencias (Arch/CachyOS), clona o migra los proyectos, crea los symlinks, instala SDDM, configura GRUB y aplica el tema. Pasos sueltos: `install.sh projects links apply`. Guía completa de migración desde Nobara: **[CACHYOS.md](CACHYOS.md)**.
+`install.sh` instala dependencias (Arch/CachyOS), clona o migra los proyectos, crea los symlinks, instala SDDM, configura el tema de arranque (GRUB o Limine) y aplica el tema. Pasos sueltos: `install.sh projects links apply`. Guía completa de migración desde Nobara: **[CACHYOS.md](CACHYOS.md)**.
 
 ## Temas disponibles
 
@@ -44,9 +45,9 @@ El RightMenu de AGS incluye un selector de temas integrado. Cada tarjeta de tema
 2. `build.js` se ejecuta en segundo plano — actualiza AGS y Hyprland. Si además tenés permisos de escritura en `/usr/share/sddm` (por ejemplo corriendo `manage.sh` con `sudo`), también actualiza SDDM; si no, lo salta con un aviso sin frenar el resto.
 3. Hyprland recarga su configuración → los bordes de ventana cambian al color del nuevo tema.
 4. El fondo de pantalla se recarga via `~/.config/hypr/scripts/change-wallpaper.sh`, respetando el modo (animado/estático) que hayas elegido — guardado en `wallpaper-mode`.
-5. GRUB se actualiza con `sudo -n node build-grub.js` (requiere regla sudoers, ver abajo).
+5. El tema de arranque (GRUB o Limine, el que tenga el sistema) se actualiza con `sudo -n node build-boot.js` (requiere regla sudoers, ver abajo).
 
-`build.js` nunca toca GRUB directamente — eso es trabajo exclusivo de `build-grub.js`, porque escribir en `/boot` necesita root y `build.js` está pensado para correr sin privilegios (así el hot-reload desde AGS no se cae).
+`build.js` nunca toca el bootloader directamente — eso es trabajo exclusivo de `build-boot.js`, porque escribir en `/boot` necesita root y `build.js` está pensado para correr sin privilegios (así el hot-reload desde AGS no se cae).
 
 ### Desde terminal
 
@@ -68,15 +69,16 @@ También puedes aplicar solo un builder específico:
 node builders/ags.js       # Solo AGS (colors.scss)
 node builders/hyprland.js  # Solo Hyprland
 node builders/sddm.js      # Solo SDDM
-sudo node build-grub.js    # Solo GRUB (requiere root)
+sudo node builders/grub.js    # Solo GRUB (requiere root)
+sudo node builders/limine.js  # Solo Limine (requiere root)
 ```
 
 O cambiar el tema activo directamente:
 
 ```bash
 echo "cyberpunk" > current-theme
-node build.js              # Todo excepto GRUB
-sudo node build-grub.js    # GRUB por separado
+node build.js              # Todo excepto el bootloader
+sudo node build-boot.js    # GRUB o Limine por separado
 ```
 
 ## Estructura
@@ -93,10 +95,12 @@ shiro-theme/
 │   ├── ags.js         → ~/.config/shiro-ags/styles/colors.scss
 │   ├── hyprland.js    → ~/.config/shiro-hyprland/conf/colors.lua + wallpapers/
 │   ├── sddm.js        → /usr/share/sddm/themes/shiro-sddm/
-│   └── grub.js        → ~/.config/shiro-grub/ → /boot/grub*/themes/shiro-grub
+│   ├── grub.js        → ~/.config/shiro-grub/ → /boot/grub*/themes/shiro-grub
+│   └── limine.js      → ~/.config/shiro-limine/ → bloque en limine.conf + fondo en el ESP
 ├── shared.js          # Lee current-theme, exporta el JSON y las carpetas de cada proyecto
 ├── build.js           # Ejecuta builders de AGS, Hyprland y SDDM (sin root)
-├── build-grub.js      # Ejecuta solo el builder de GRUB (requiere sudo)
+├── build-boot.js      # Builders de GRUB y Limine; cada uno se omite si su bootloader no está (requiere sudo)
+├── build-grub.js      # Alias de build-boot.js para reglas sudoers antiguas
 ├── projects.sh        # Manifiesto de proyectos (repo, carpeta, symlink) para manage.sh e install.sh
 ├── install.sh         # Instala / importa / migra todos los proyectos
 ├── manage.sh          # Menú de administración interactivo
@@ -149,12 +153,12 @@ El SCSS no usa variables de Sass (`$var`) — usa `var(--var)` directamente, lo 
 2. Agrega `wallpapers/mi-tema.png` (y opcionalmente `mi-tema.mp4` para fondo animado).
 3. Selecciónalo desde el widget de AGS o con `echo "mi-tema" > current-theme && node build.js`.
 
-## Configuración de GRUB sin contraseña (desde AGS)
+## Tema de arranque sin contraseña (desde AGS)
 
-Para que el widget de AGS pueda aplicar el tema de GRUB automáticamente al cambiar tema, necesitas una regla sudoers que permita ejecutar `build-grub.js` sin contraseña. `install.sh grub` la crea (validada con `visudo`); a mano:
+Para que el widget de AGS pueda aplicar el tema de GRUB/Limine automáticamente al cambiar tema, necesitas una regla sudoers que permita ejecutar `build-boot.js` sin contraseña. `install.sh boot` la crea (validada con `visudo`); a mano:
 
 ```bash
-sudo sh -c 'echo "emerson ALL=(ALL) NOPASSWD: /usr/bin/node /home/emerson/.config/shiro-theme/build-grub.js" > /etc/sudoers.d/shiro-grub && chmod 440 /etc/sudoers.d/shiro-grub'
+sudo sh -c 'echo "emerson ALL=(ALL) NOPASSWD: /usr/bin/node /home/emerson/.config/shiro-theme/build-boot.js" > /etc/sudoers.d/shiro-boot && chmod 440 /etc/sudoers.d/shiro-boot'
 ```
 
 Verifica que la ruta de Node coincida con tu sistema:
@@ -163,7 +167,7 @@ Verifica que la ruta de Node coincida con tu sistema:
 which node   # debe ser /usr/bin/node
 ```
 
-Sin esta regla, el GRUB no se actualiza desde el widget (el resto del tema sí aplica). Siempre puedes aplicarlo manualmente con `sudo node build-grub.js`.
+La regla exige la ruta absoluta: `sudo -n node build-boot.js` desde la carpeta pide contraseña. Sin esta regla, el tema de arranque no se actualiza desde el widget (el resto del tema sí aplica). Siempre puedes aplicarlo manualmente con `sudo node ~/.config/shiro-theme/build-boot.js`.
 
 ## Requisitos
 
@@ -171,4 +175,4 @@ Sin esta regla, el GRUB no se actualiza desde el widget (el resto del tema sí a
 - AGS v3 (`ags`) con soporte GTK4/GJS
 - Hyprland con `mpvpaper` (fondos de video) y/o `hyprpaper` (fondos estáticos)
 - SDDM con el tema `shiro-sddm`
-- GRUB (para el builder de grub; si el sistema usa Limine o systemd-boot, se omite solo)
+- GRUB o Limine para el tema de arranque (con systemd-boot no hay tema; los builders se omiten solos)

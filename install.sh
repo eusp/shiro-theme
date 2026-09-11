@@ -5,7 +5,7 @@
 #   bash ~/.config/shiro-theme/install.sh -y         # todos los pasos, sin preguntar
 #   bash ~/.config/shiro-theme/install.sh projects links apply   # solo esos pasos
 #
-# Pasos: deps projects links sddm grub apply
+# Pasos: deps projects links sddm boot apply
 # Correr como tu usuario (NO con sudo): pide la contraseña cuando la necesita.
 # Es idempotente: si un proyecto ya está, lo deja; si está con el nombre
 # antiguo (~/.config/ags, ~/.config/hypr, ~/.config/grub-theme) lo migra.
@@ -16,7 +16,7 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)
 # shellcheck source=projects.sh
 source "$SCRIPT_DIR/projects.sh"
 
-ALL_STEPS=(deps projects links sddm grub apply)
+ALL_STEPS=(deps projects links sddm boot apply)
 ASSUME_YES=0
 STEPS=()
 
@@ -24,7 +24,7 @@ for arg in "$@"; do
     case "$arg" in
         -y|--yes) ASSUME_YES=1 ;;
         -h|--help) sed -n '2,11p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
-        deps|projects|links|sddm|grub|apply) STEPS+=("$arg") ;;
+        deps|projects|links|sddm|boot|apply) STEPS+=("$arg") ;;
         *) echo "Paso desconocido: $arg (válidos: ${ALL_STEPS[*]})" >&2; exit 1 ;;
     esac
 done
@@ -50,6 +50,9 @@ ask() {
 }
 
 have() { command -v "$1" &>/dev/null; }
+
+have_grub() { have grub-mkconfig || have grub2-mkconfig; }
+have_limine() { have limine || compgen -G "/boot/limine.conf" >/dev/null || compgen -G "/boot/EFI/*/limine.conf" >/dev/null; }
 
 backup_path() { echo "$1.bak-$(date +%Y%m%d-%H%M%S)"; }
 
@@ -249,25 +252,31 @@ step_sddm() {
     fi
 }
 
-# ─── grub ────────────────────────────────────────────────────────────────────
+# ─── boot ────────────────────────────────────────────────────────────────────
 
-step_grub() {
-    step "GRUB"
+step_boot() {
+    step "Bootloader (GRUB / Limine)"
 
-    if ! have grub-mkconfig && ! have grub2-mkconfig; then
-        echo "Este sistema no usa GRUB (¿Limine o systemd-boot?): se omite shiro-grub."
+    if have_grub; then
+        echo "✓ GRUB detectado → shiro-grub"
+    elif have_limine; then
+        echo "✓ Limine detectado → shiro-limine"
+    else
+        echo "No se detectó GRUB ni Limine (¿systemd-boot?): se omite el tema de arranque."
         return 0
     fi
 
     local node; node="$(command -v node)"
-    local rule="$SHIRO_USER ALL=(ALL) NOPASSWD: $node $THEME_DIR/build-grub.js"
-    if ! sudo grep -qxF "$rule" /etc/sudoers.d/shiro-grub 2>/dev/null \
-        && ask "¿Crear regla sudoers para que AGS aplique GRUB sin contraseña?"; then
+    local rule="$SHIRO_USER ALL=(ALL) NOPASSWD: $node $THEME_DIR/build-boot.js"
+    if ! sudo grep -qxF "$rule" /etc/sudoers.d/shiro-boot 2>/dev/null \
+        && ask "¿Crear regla sudoers para que AGS aplique el tema de arranque sin contraseña?"; then
         local tmp; tmp="$(mktemp)"
         echo "$rule" >"$tmp"
-        sudo visudo -cf "$tmp" && sudo install -m 440 -o root -g root "$tmp" /etc/sudoers.d/shiro-grub
+        sudo visudo -cf "$tmp" && sudo install -m 440 -o root -g root "$tmp" /etc/sudoers.d/shiro-boot
         rm -f "$tmp"
-        echo "✓ /etc/sudoers.d/shiro-grub"
+        # Regla anterior (build-grub.js), reemplazada por esta
+        sudo rm -f /etc/sudoers.d/shiro-grub
+        echo "✓ /etc/sudoers.d/shiro-boot"
     fi
 }
 
@@ -278,8 +287,8 @@ step_apply() {
 
     node "$THEME_DIR/build.js"
 
-    if have grub-mkconfig || have grub2-mkconfig; then
-        sudo node "$THEME_DIR/build-grub.js"
+    if have_grub || have_limine; then
+        sudo node "$THEME_DIR/build-boot.js"
     fi
 }
 

@@ -49,6 +49,7 @@ const wallpaperImage =
 const AGS_DIR = path.join(HOME, ".config/shiro-ags");
 const HYPR_DIR = path.join(HOME, ".config/shiro-hyprland");
 const GRUB_DIR = path.join(HOME, ".config/shiro-grub");
+const LIMINE_DIR = path.join(HOME, ".config/shiro-limine");
 const SDDM_DIR = "/usr/share/sddm/themes/shiro-sddm";
 
 function stripHash(color) {
@@ -65,6 +66,7 @@ module.exports = {
   AGS_DIR,
   HYPR_DIR,
   GRUB_DIR,
+  LIMINE_DIR,
   SDDM_DIR,
   theme,
   stripHash,

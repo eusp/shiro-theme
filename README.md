@@ -117,7 +117,7 @@ Los colores de AGS se definen como **CSS custom properties** (variables CSS nati
 2. Se genera un bloque CSS con todas las variables (`--primary`, `--base`, `--primary-rgb`, etc.).
 3. Se inyecta vía `Gtk.CssProvider` con prioridad 900, que supera la prioridad de carga de AGS (800), sobreescribiendo los valores al instante.
 
-El SCSS no usa variables de Sass (`$var`) — usa `var(--var)` directamente, lo que permite este override en runtime.
+Los colores del SCSS no usan variables de Sass (`$var`) — usan `var(--var)` directamente, lo que permite este override en runtime. Las variables de Sass solo se usan para valores fijos (tamaños, radios, fuentes).
 
 ## Crear un tema nuevo
 

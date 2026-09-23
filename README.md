@@ -34,6 +34,7 @@ bash ~/.config/shiro-theme/install.sh
 | `cyberpunk` | Neón vibrante sobre fondo oscuro |
 | `kurisu-neon` | Inspirado en el anime, violeta y cyan |
 | `violet-night` | Púrpura oscuro, elegante |
+| `monochrome-city` | Blanco y negro estilo manga — tramas de tinta y luz de atardecer |
 
 ## Uso rápido
 

@@ -1,0 +1,32 @@
+{
+  "name": "Monochrome City",
+  "bootMessage": "",
+
+  "base": "#0a0a0c",
+  "text": "#e9e9ec",
+  "subtext0": "#a3a4aa",
+
+  "surface0": "#121214",
+  "surface1": "#1c1c20",
+  "surface2": "#2b2b31",
+
+  "overlay0": "#232327",
+  "overlay1": "#3a3a41",
+
+  "primary": "#c9cbd2",
+  "primaryAlt": "#edeef2",
+  "primaryMuted": "#7e818a",
+
+  "danger": "#a9707a",
+  "warning": "#b8a77e",
+  "success": "#7d9a8c",
+  "info": "#8fa3b8",
+
+  "accent0": "#d6d6da",
+  "accent1": "#9d9da4",
+  "accent2": "#5f5f67",
+  "accent3": "#f6f6f8",
+
+  "mantle": "#070708",
+  "crust": "#030304"
+}

@@ -236,6 +236,10 @@ step_links() {
         ln -sfn "$app" "$USER_HOME/.local/share/applications/$(basename "$app")"
         echo "✓ $(basename "$app")"
     done
+    mkdir -p "$USER_HOME/.local/share/icons/hicolor/scalable/apps"
+    for app in "$THEME_DIR"/applications/icons/*.svg; do
+        ln -sfn "$app" "$USER_HOME/.local/share/icons/hicolor/scalable/apps/$(basename "$app")"
+    done
 }
 
 # ─── sddm ────────────────────────────────────────────────────────────────────

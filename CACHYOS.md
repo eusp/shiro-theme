@@ -9,7 +9,7 @@ Todo lo resuelve `install.sh`.
 | Proyecto | En CachyOS | Qué cambia respecto a Nobara |
 |---|---|---|
 | **shiro-theme** | ✅ Sí | Solo necesita `nodejs`. `pngjs` ya viene en `node_modules/`. |
-| **shiro-ags** | ✅ Sí | Astal core viene de AUR (`libastal-io-git`, `libastal-4-git`) en vez del COPR `sdegler/hyprland`. AGS se sigue compilando desde el código fuente en `/usr/local`. El código no depende de la distro (`lib/` habla directo con D-Bus, `hyprctl`, `wpctl`). |
+| **shiro-ags** | ✅ Sí | Astal core viene de AUR (`libastal-io-git`, `libastal-4-git`) en vez del COPR `sdegler/hyprland`. La librería JS de AGS va en `/usr/local/share/ags/js` y el comando `ags` es `shiro-ags/scripts/ags` (empaqueta con Rolldown y corre con `gjs`): no hace falta Go. El código no depende de la distro (`lib/` habla directo con D-Bus, `hyprctl`, `wpctl`). |
 | **shiro-hyprland** | ✅ Sí | Hyprland viene de los repos oficiales (siempre al día, sin COPR). `mpvpaper` viene de AUR. El agente polkit ahora se busca en `/usr/libexec` y en `/usr/bin` (`scripts/polkit-agent.sh`). Revisar `conf/monitors.lua`. |
 | **shiro-sddm** | ✅ Sí | Su `install.sh` ya soporta `pacman` (`qt6-svg`, `qt6-multimedia-ffmpeg`, `qt6-virtualkeyboard`). Además, en CachyOS no existe el problema del nobara-updater que cambiaba SDDM por plasma-login-manager. |
 | **shiro-grub** | ✅ Si eliges GRUB | Las rutas (`/boot/grub` en vez de `/boot/grub2`, `grub-mkconfig` en vez de `grub2-mkconfig`) se detectan solas. |
@@ -64,7 +64,7 @@ cambio (`-y` para aceptar todo). Es idempotente: puedes volver a correrlo, o cor
 
 | Paso | Qué hace |
 |---|---|
-| `deps` | `pacman`: Hyprland, herramientas, compilación de AGS, fuentes y `avahi`/`nss-mdns`. Instala `paru` si no hay helper de AUR (CachyOS ya no lo trae). AUR: `mpvpaper`, `libastal-io-git`, `libastal-4-git`. Compila AGS v3 en `~/ags` → `/usr/local`. Activa mDNS (`*.local`), NetworkManager y bluetooth, y agrega el usuario al grupo `video` si hay backlight. |
+| `deps` | `pacman`: Hyprland, herramientas, `gjs`/`dart-sass` para AGS, fuentes y `avahi`/`nss-mdns`. Instala `paru` si no hay helper de AUR (CachyOS ya no lo trae). AUR: `mpvpaper`, `libastal-io-git`, `libastal-4-git`. Baja la librería JS de AGS v3.1.2 a `/usr/local/share/ags/js`, corre `npm install` en shiro-ags y enlaza `/usr/local/bin/ags` al script de shiro-ags. Activa mDNS (`*.local`), NetworkManager y bluetooth, y agrega el usuario al grupo `video` si hay backlight. |
 | `projects` | Clona los proyectos (o migra carpetas con el nombre antiguo) y deja todo a nombre del usuario. |
 | `links` | `~/.config/ags → shiro-ags` y `~/.config/hypr → shiro-hyprland` (la config por defecto de CachyOS queda en `*.bak-FECHA`). Habilita `normalize-volume.service`. |
 | `sddm` | Corre `shiro-sddm/install.sh` (dependencias, fuentes, `/etc/sddm.conf.d/shiro-sddm.conf`) y activa SDDM como gestor de login. |

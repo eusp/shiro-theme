@@ -59,6 +59,8 @@ backup_path() { echo "$1.bak-$(date +%Y%m%d-%H%M%S)"; }
 # ─── deps ────────────────────────────────────────────────────────────────────
 
 AUR_PACKAGES=(mpvpaper libastal-io-git libastal-4-git)
+# Versión de la librería JS de AGS (la de shiro-ags/package.json)
+AGS_VERSION=v3.1.2
 
 step_deps() {
     step "Dependencias"
@@ -75,9 +77,8 @@ step_deps() {
         # Hyprland
         hyprland hyprpaper hyprlock xdg-desktop-portal-hyprland lxqt-policykit
         wl-clipboard cliphist grim slurp ptyxis nautilus
-        # AGS (runtime + compilación)
-        gjs gtk4 gtk4-layer-shell dart-sass libnotify
-        meson ninja go gobject-introspection
+        # AGS: gjs lo ejecuta, sass compila los estilos (el CLI en Go ya no se usa)
+        gjs gtk4 gtk4-layer-shell dart-sass libnotify gobject-introspection
         # servicios que lee el shell
         networkmanager nm-connection-editor upower bluez bluez-utils brightnessctl
         pipewire-pulse wireplumber libpulse pavucontrol
@@ -104,17 +105,21 @@ step_deps() {
         echo "⚠ Sin helper de AUR: instala a mano ${AUR_PACKAGES[*]}"
     fi
 
-    # AGS se compila e instala en /usr/local: shiro-ags/package.json apunta a /usr/local/share/ags/js
-    if have ags; then
-        echo "✓ AGS ya instalado: $(ags --version 2>/dev/null || echo '?')"
-    elif ask "¿Compilar AGS v3 desde el código fuente en ~/ags (se instala en /usr/local)?"; then
-        [ -d "$USER_HOME/ags/.git" ] || git clone https://github.com/aylur/ags.git "$USER_HOME/ags"
-        (
-            cd "$USER_HOME/ags"
-            npm install
-            meson setup build --wipe 2>/dev/null || meson setup build
-            sudo meson install -C build
-        )
+    # Librería JS de AGS (TypeScript, sin compilar) en /usr/local/share/ags/js, donde la
+    # busca shiro-ags/package.json. No se compila AGS: su CLI está en Go y shiro usa
+    # shiro-ags/scripts/ags en su lugar (enlazado más abajo, en /usr/local/bin/ags)
+    local ags_js=/usr/local/share/ags/js
+    if [ -f "$ags_js/package.json" ]; then
+        echo "✓ Librería de AGS: $(grep -m1 '"version"' "$ags_js/package.json" | tr -dc '0-9.')"
+    elif ask "¿Instalar la librería de AGS $AGS_VERSION en $ags_js?"; then
+        local tmp
+        tmp="$(mktemp -d)"
+        curl -fsSL "https://github.com/aylur/ags/archive/refs/tags/$AGS_VERSION.tar.gz" | tar -xz -C "$tmp" --strip-components=1
+        sudo mkdir -p "$ags_js"
+        sudo cp -r "$tmp/lib" "$tmp/package.json" "$tmp/package-lock.json" "$ags_js/"
+        # gnim es peerDependency: npm la deja en $ags_js/node_modules/gnim
+        (cd "$ags_js" && sudo npm install --omit=dev --no-audit --no-fund)
+        rm -rf "$tmp"
     fi
 
     if systemctl list-unit-files avahi-daemon.service &>/dev/null; then
@@ -187,9 +192,14 @@ step_projects() {
     if [ ! -d "$THEME_DIR/node_modules/pngjs" ] && have npm; then
         (cd "$THEME_DIR" && npm install --no-audit --no-fund)
     fi
-    if [ ! -d "$USER_HOME/.config/shiro-ags/node_modules" ] && [ -d /usr/local/share/ags/js ] && have npm; then
-        # Solo tipos para el editor / npm run check; AGS no lo necesita para arrancar
+    if [ ! -d "$USER_HOME/.config/shiro-ags/node_modules/rolldown" ] && [ -d /usr/local/share/ags/js ] && have npm; then
+        # Rolldown empaqueta el shell al arrancar; también trae los tipos para el editor
         (cd "$USER_HOME/.config/shiro-ags" && npm install --no-audit --no-fund) || true
+    fi
+    # `ags` es el script de shiro-ags (reemplaza al CLI en Go de AGS)
+    if [ -x "$USER_HOME/.config/shiro-ags/scripts/ags" ] \
+        && [ "$(readlink /usr/local/bin/ags)" != "$USER_HOME/.config/shiro-ags/scripts/ags" ]; then
+        sudo ln -sfn "$USER_HOME/.config/shiro-ags/scripts/ags" /usr/local/bin/ags
     fi
 }
 

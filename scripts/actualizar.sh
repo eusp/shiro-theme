@@ -33,6 +33,15 @@ actualizar_shiro() {
     hyprctl reload >/dev/null && echo "✓ Hyprland recargado"
 
     titulo "AGS"
+    local ags_dir="$USER_HOME/.config/shiro-ags"
+    # Rolldown empaqueta el shell: si el pull trajo dependencias nuevas, hay que instalarlas
+    if [ ! -d "$ags_dir/node_modules/rolldown" ] || [ "$ags_dir/package-lock.json" -nt "$ags_dir/node_modules/.package-lock.json" ]; then
+        (cd "$ags_dir" && npm install --no-audit --no-fund) && echo "✓ Dependencias de AGS"
+    fi
+    # `ags` es el script de shiro-ags, no el CLI en Go de AGS
+    if [ "$(readlink /usr/local/bin/ags)" != "$ags_dir/scripts/ags" ]; then
+        sudo ln -sfn "$ags_dir/scripts/ags" /usr/local/bin/ags && echo "✓ ags → shiro-ags/scripts/ags"
+    fi
     ags quit >/dev/null 2>&1
     sleep 1
     setsid -f ags run "$USER_HOME/.config/ags/app.ts" >/dev/null 2>&1

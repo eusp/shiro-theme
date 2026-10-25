@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Actualizar sistema
+Comment=Actualizar todos los paquetes (paru, flatpak) y después Shiro
+Exec=ptyxis --new-window -T "Actualizar sistema" -- sh -c "~/.config/shiro-theme/scripts/actualizar.sh sistema"
+Icon=system-software-update
+Terminal=false
+Categories=System;

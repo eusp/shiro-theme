@@ -228,6 +228,14 @@ step_links() {
         systemctl --user enable normalize-volume.service
         echo "✓ normalize-volume.service habilitado"
     fi
+
+    # "Actualizar Shiro" / "Actualizar sistema" en el menú de aplicaciones
+    local app
+    mkdir -p "$USER_HOME/.local/share/applications"
+    for app in "$THEME_DIR"/applications/*.desktop; do
+        ln -sfn "$app" "$USER_HOME/.local/share/applications/$(basename "$app")"
+        echo "✓ $(basename "$app")"
+    done
 }
 
 # ─── sddm ────────────────────────────────────────────────────────────────────

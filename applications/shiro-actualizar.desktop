@@ -2,7 +2,7 @@
 Type=Application
 Name=Actualizar Shiro
 Comment=Bajar de GitHub AGS, Hyprland y temas, aplicar el tema y reiniciar AGS
-Exec=ptyxis --new-window -T "Actualizar Shiro" -- sh -c "~/.config/shiro-theme/scripts/actualizar.sh shiro"
+Exec=ptyxis -T "Actualizar Shiro" -x "sh -c '~/.config/shiro-theme/scripts/actualizar.sh shiro'"
 Icon=shiro-actualizar
 Terminal=false
 Categories=System;

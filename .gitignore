@@ -1,0 +1,4 @@
+# Tema elegido en esta máquina: cada PC/laptop tiene el suyo y no debe
+# bloquear el git pull. build.js lo crea con el tema por defecto si falta.
+/current-theme
+/wallpaper-mode

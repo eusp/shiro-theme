@@ -12,9 +12,21 @@ const ROOT =
     ".config/shiro-theme"
   );
 
+// current-theme y wallpaper-mode son de cada máquina y no van en git
+// (.gitignore): si falta, se crea con el tema por defecto.
+const DEFAULT_THEME = "frozen-rukia";
+const CURRENT_THEME_FILE = path.join(ROOT, "current-theme");
+
+if (!fs.existsSync(CURRENT_THEME_FILE)) {
+  fs.writeFileSync(CURRENT_THEME_FILE, `${DEFAULT_THEME}\n`);
+  if (process.env.SUDO_UID && process.env.SUDO_GID) {
+    fs.chownSync(CURRENT_THEME_FILE, Number(process.env.SUDO_UID), Number(process.env.SUDO_GID));
+  }
+}
+
 const CURRENT_THEME =
   fs.readFileSync(
-    path.join(ROOT, "current-theme"),
+    CURRENT_THEME_FILE,
     "utf8"
   ).trim();
 

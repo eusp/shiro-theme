@@ -283,8 +283,16 @@ step_boot() {
 # ─── apply ───────────────────────────────────────────────────────────────────
 
 step_apply() {
-    step "Aplicar tema ($(cat "$THEME_DIR/current-theme"))"
+    step "Aplicar tema ($(cat "$THEME_DIR/current-theme" 2>/dev/null || echo "por defecto"))"
 
+    # Archivos de cada máquina (no van en git): se crean de las plantillas
+    local monitors="$USER_HOME/.config/shiro-hyprland/conf/monitors.lua"
+    if [ ! -f "$monitors" ] && [ -f "${monitors%.lua}.example.lua" ]; then
+        cp "${monitors%.lua}.example.lua" "$monitors"
+        echo "→ conf/monitors.lua creado desde monitors.example.lua (ajústalo con hyprctl monitors)"
+    fi
+
+    # build.js crea current-theme con el tema por defecto si falta
     node "$THEME_DIR/build.js"
 
     if have_grub || have_limine; then

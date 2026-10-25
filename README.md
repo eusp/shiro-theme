@@ -106,8 +106,8 @@ shiro-theme/
 ├── install.sh         # Instala / importa / migra todos los proyectos
 ├── manage.sh          # Menú de administración interactivo
 ├── CACHYOS.md         # Guía de migración Nobara → CachyOS
-├── current-theme      # Nombre del tema activo (texto plano)
-└── wallpaper-mode     # "animated" o "static" — qué fondo usar (texto plano)
+├── current-theme      # Nombre del tema activo (texto plano, local: no va en git)
+└── wallpaper-mode     # "animated" o "static" — qué fondo usar (local: no va en git)
 ```
 
 ## Cómo funciona el hot-reload de colores
